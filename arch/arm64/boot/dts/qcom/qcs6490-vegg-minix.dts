@@ -222,6 +222,18 @@
 		regulator-boot-on;
 		regulator-always-on;
 	};
+
+	wlan_pwrseq: wlan-pwrseq {
+		compatible = "mmc-pwrseq-simple";
+
+		pinctrl-0 = <&wl_enable_h>;
+		pinctrl-names = "default";
+
+		reset-gpios = <&tlmm 84 GPIO_ACTIVE_LOW>;
+		post-power-on-delay-ms = <200>;
+		power-off-delay-us = <20000>;
+	};
+
 };
 
 &apps_rsc {
@@ -522,6 +534,30 @@
 	};
 };
 
+&i2c1 {
+        status = "okay";
+        clock-frequency = <400000>;
+
+        typec-mux@42 {
+                compatible = "fcs,fsa4480";
+                reg = <0x42>;
+
+                vcc-supply = <&vreg_audio_sw>;
+
+                interrupts-extended =
+                        <&tlmm 31 IRQ_TYPE_LEVEL_LOW>;
+
+                mode-switch;
+                orientation-switch;
+
+                port {
+                        fsa4480_sbu_mux: endpoint {
+                                remote-endpoint = <&typec_sbu>;
+                        };
+                };
+        };
+};
+
 &pm7250b_adc {
 	channel@4d {
 		reg = <ADC5_AMUX_THM1_100K_PU>;
@@ -624,6 +660,15 @@
 		qcom,hw-settle-time = <200>;
 		qcom,pre-scaling = <1 1>;
 		label = "pm7325_sdm_skin_therm";
+	};
+};
+
+&tlmm {
+	wl_enable_h: wl-enable-h-state {
+		pins = "gpio84";
+		function = "gpio";
+		drive-strength = <8>;
+		bias-disable;
 	};
 };
 
